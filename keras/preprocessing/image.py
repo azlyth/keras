@@ -500,7 +500,8 @@ class ImageDataGenerator(object):
                             save_prefix='',
                             save_format='png',
                             follow_links=False,
-                            interpolation='nearest'):
+                            interpolation='nearest',
+                            save_mask=False):
         return DirectoryIterator(
             directory, self,
             target_size=target_size, color_mode=color_mode,
@@ -508,6 +509,7 @@ class ImageDataGenerator(object):
             data_format=self.data_format,
             batch_size=batch_size, shuffle=shuffle, seed=seed,
             save_to_dir=save_to_dir,
+            save_mask=save_mask,
             save_prefix=save_prefix,
             save_format=save_format,
             follow_links=follow_links,
@@ -1018,7 +1020,8 @@ class DirectoryIterator(Iterator):
                  batch_size=32, shuffle=True, seed=None,
                  data_format=None, save_to_dir=None,
                  save_prefix='', save_format='png',
-                 follow_links=False, interpolation='nearest'):
+                 follow_links=False, interpolation='nearest',
+                 save_mask=False):
         if data_format is None:
             data_format = K.image_data_format()
         self.directory = directory
@@ -1051,6 +1054,7 @@ class DirectoryIterator(Iterator):
         self.save_prefix = save_prefix
         self.save_format = save_format
         self.interpolation = interpolation
+        self.save_mask = save_mask
 
         white_list_formats = {'png', 'jpg', 'jpeg', 'bmp', 'ppm'}
 
@@ -1117,6 +1121,18 @@ class DirectoryIterator(Iterator):
                                                                   hash=np.random.randint(1e7),
                                                                   format=self.save_format)
                 img.save(os.path.join(self.save_to_dir, fname))
+
+                if self.save_mask:
+                    # Create the mask
+                    mask = np.zeros(self.image_shape[:2])
+                    for px, layer_x in enumerate(mask):
+                        for py, layer_y in enumerate(layer_x):
+                            mask[px][py] = not all(batch_x[i][px][py] == [1, 1, 1])
+
+                    # Save the mask
+                    mask_fname = '{}.mask'.format(os.path.join(self.save_to_dir, fname))
+                    np.save(mask_fname, mask, allow_pickle=True)
+
         # build batch of labels
         if self.class_mode == 'input':
             batch_y = batch_x.copy()
