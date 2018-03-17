@@ -1127,7 +1127,7 @@ class DirectoryIterator(Iterator):
                     mask = np.zeros(self.image_shape[:2])
                     for px in range(len(mask)):
                         for py in range(len(batch_x[i][px])):
-                            mask[px][py] = not all(batch_x[i][px][py] == [1, 1, 1])
+                            mask[px][py] = sum(batch_x[i][px][py]) != 3 # not all 1's
 
                     # Save the mask
                     mask_fname = '{}.mask'.format(os.path.join(self.save_to_dir, fname))
