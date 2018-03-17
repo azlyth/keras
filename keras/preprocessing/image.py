@@ -1125,8 +1125,8 @@ class DirectoryIterator(Iterator):
                 if self.save_mask:
                     # Create the mask
                     mask = np.zeros(self.image_shape[:2])
-                    for px, layer_x in enumerate(mask):
-                        for py, layer_y in enumerate(layer_x):
+                    for px in range(len(mask)):
+                        for py in range(len(batch_x[i][px])):
                             mask[px][py] = not all(batch_x[i][px][py] == [1, 1, 1])
 
                     # Save the mask
