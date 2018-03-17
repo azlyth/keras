@@ -1122,14 +1122,9 @@ class DirectoryIterator(Iterator):
                                                                   format=self.save_format)
                 img.save(os.path.join(self.save_to_dir, fname))
 
+                # Create and save the mask
                 if self.save_mask:
-                    # Create the mask
-                    mask = np.zeros(self.image_shape[:2])
-                    for px in range(len(mask)):
-                        for py in range(len(batch_x[i][px])):
-                            mask[px][py] = sum(batch_x[i][px][py]) != 3 # not all 1's
-
-                    # Save the mask
+                    mask = (batch_x[i] != [1, 1, 1]).all(axis=2)
                     mask_fname = '{}.mask'.format(os.path.join(self.save_to_dir, fname))
                     np.save(mask_fname, mask, allow_pickle=True)
 
